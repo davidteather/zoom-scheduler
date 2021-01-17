@@ -24,7 +24,7 @@ def find_zoom_exe():
         # OS X
         pass
     elif sys.platform == "win32":
-        # Windows
+        # Windows...
 
         # Requirements to find for this section
         #  * Script is somewhere under a /users directory like documents or desktop
@@ -51,8 +51,6 @@ if ZOOM_PATH == None:
     try:
         with open('data/settings.json', 'r', encoding='utf-8') as f:
             ZOOM_PATH = json.loads(f.read())['ZOOM_PATH']
-            if not os.path.exists(ZOOM_PATH):
-                ZOOM_PATH = None
     except FileNotFoundError:
         pass
 
@@ -69,7 +67,6 @@ if ZOOM_PATH == None:
         # Save zoom_path for future launches so user only has to enter it once
         with open('data/settings.json', 'w+', encoding='utf-8') as f:
                 json.dump({'ZOOM_PATH': ZOOM_PATH}, f, ensure_ascii=False, indent=4)
-
 
 def join_meeting(meeting):
     if meeting['end_date'] < datetime.datetime.now().timestamp():
@@ -102,7 +99,6 @@ def join_meeting(meeting):
     # Join a meeting
     pyautogui.write(str(room_id))
     pyautogui.press('enter')
-    time.sleep(1)
 
     # Handle Required Login
     warning = pyautogui.locateOnScreen("images/warning.png")
@@ -114,7 +110,6 @@ def join_meeting(meeting):
     else:
         raise Exception("Authorization is required for this zoom call. Please login.")
 
-    time.sleep(1)
     join_no_video = pyautogui.locateOnScreen("images/no-video.png")
     if join_no_video != None:
         pyautogui.moveTo(join_no_video)
