@@ -1,5 +1,9 @@
-import json
 import dateparser
+import json
+import os
+
+if not os.path.isdir('data'):
+    os.mkdir('data')
 
 def ask():
     time = input("What time is your class? (e.g. 14:30): ")
@@ -22,12 +26,15 @@ def ask():
         "end_date": end_epoch
     }
 
-    with open("meetings.json", "r") as i:
-        current_data = json.loads(i.read())['meetings']
-        current_data.append(new_meeting)
-
-        with open('meetings.json', 'w+', encoding='utf-8') as f:
-            json.dump({'meetings': current_data}, f, ensure_ascii=False, indent=4)
+    try:
+        with open("data/meetings.json", "r") as i:
+            current_data = json.loads(i.read())['meetings']
+            current_data.append(new_meeting)
+    except FileNotFoundError:
+        current_data = [new_meeting]
+    
+    with open('data/meetings.json', 'w+', encoding='utf-8') as f:
+        json.dump({'meetings': current_data}, f, ensure_ascii=False, indent=4)
 
 
 inp = 'y'
