@@ -14,6 +14,7 @@ import os
 if not os.path.isdir('data'):
     os.mkdir('data')
 
+
 def find_zoom_exe():
     # "C:\\Users\\David Teather\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
     # "C:\Users\David Teather\AppData\Roaming\Zoom\bin\Zoom.exe"
@@ -31,7 +32,8 @@ def find_zoom_exe():
         #  * Zoom @ Default Installation Location
         path_attributes = os.path.abspath(os.getcwd()).split("\\")
         if path_attributes[1] == 'Users':
-            path = path_attributes[0] + "\\" + path_attributes[1] + "\\" + path_attributes[2] + "\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
+            path = path_attributes[0] + "\\" + path_attributes[1] + "\\" + \
+                path_attributes[2] + "\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
             if os.path.exists(path):
                 return path
 
@@ -40,7 +42,8 @@ def find_zoom_exe():
         #  * Zoom @ Default Installation
         path_attributes = sys.executable.split("\\")
         if path_attributes[1] == 'Users':
-            path = path_attributes[0] + "\\" + path_attributes[1] + "\\" + path_attributes[2] + "\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
+            path = path_attributes[0] + "\\" + path_attributes[1] + "\\" + \
+                path_attributes[2] + "\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
             if os.path.exists(path):
                 return path
 
@@ -54,7 +57,7 @@ if ZOOM_PATH == None:
     except FileNotFoundError:
         pass
 
-    # Could not load from settings :( 
+    # Could not load from settings :(
     if ZOOM_PATH == None:
         print("Could not auto-locate zoom executable. Please enter it now.")
         print("EX: C:\\Users\\Your Name\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe")
@@ -62,11 +65,14 @@ if ZOOM_PATH == None:
         ZOOM_PATH = input()
 
         while not os.path.exists(ZOOM_PATH):
-            ZOOM_PATH = input("That file path does not exist. Please enter a valid zoom.exe location")
+            ZOOM_PATH = input(
+                "That file path does not exist. Please enter a valid zoom.exe location")
 
         # Save zoom_path for future launches so user only has to enter it once
         with open('data/settings.json', 'w+', encoding='utf-8') as f:
-                json.dump({'ZOOM_PATH': ZOOM_PATH}, f, ensure_ascii=False, indent=4)
+            json.dump({'ZOOM_PATH': ZOOM_PATH}, f,
+                      ensure_ascii=False, indent=4)
+
 
 def join_meeting(meeting):
     if meeting['end_date'] < datetime.datetime.now().timestamp():
@@ -80,9 +86,9 @@ def join_meeting(meeting):
 
         with open('data/meetings.json', 'w+', encoding='utf-8') as f:
             json.dump({'meetings': current}, f, ensure_ascii=False, indent=4)
-        
+
         return
-    
+
     room_id = meeting['room_id']
     password = meeting['password']
 
@@ -108,7 +114,8 @@ def join_meeting(meeting):
         pyautogui.press('enter')
         time.sleep(1)
     else:
-        raise Exception("Authorization is required for this zoom call. Please login.")
+        raise Exception(
+            "Authorization is required for this zoom call. Please login.")
 
     join_no_video = pyautogui.locateOnScreen("images/no-video.png")
     if join_no_video != None:
@@ -132,14 +139,14 @@ def queue_scheduler():
     with open("data/meetings.json", 'r') as i:
         meetings = json.loads(i.read())['meetings']
 
-    # Scheduler 
+    # Scheduler
     global scheduler
     scheduler = BackgroundScheduler()
 
     # Add a job for each meeting
     for m in meetings:
-        scheduler.add_job(join_meeting, CronTrigger.from_crontab(m['crontab']), args=[m])
-
+        scheduler.add_job(
+            join_meeting, CronTrigger.from_crontab(m['crontab']), args=[m])
 
 
 if __name__ == '__main__':
@@ -160,5 +167,5 @@ if __name__ == '__main__':
     except (KeyboardInterrupt, SystemExit):
         observer.stop()
         scheduler.shutdown()
-    
+
     observer.join()
