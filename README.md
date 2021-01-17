@@ -1,2 +1,2 @@
-# hackdavis-2021
+# zoom-meeting-scheduler
 Repository for our hackdavis.io project
