@@ -14,6 +14,60 @@ import os
 if not os.path.isdir('data'):
     os.mkdir('data')
 
+def find_zoom_exe():
+    # "C:\\Users\\David Teather\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
+    # "C:\Users\David Teather\AppData\Roaming\Zoom\bin\Zoom.exe"
+    if sys.platform == "linux" or sys.platform == "linux2":
+        # linux
+        pass
+    elif sys.platform == "darwin":
+        # OS X
+        pass
+    elif sys.platform == "win32":
+        # Windows...
+
+        # Requirements to find for this section
+        #  * Script is somewhere under a /users directory like documents or desktop
+        #  * Zoom @ Default Installation Location
+        path_attributes = os.path.abspath(os.getcwd()).split("\\")
+        if path_attributes[1] == 'Users':
+            path = path_attributes[0] + "\\" + path_attributes[1] + "\\" + path_attributes[2] + "\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
+            if os.path.exists(path):
+                return path
+
+        # Requirements to find
+        #  * Python environment is installed under a /users directory
+        #  * Zoom @ Default Installation
+        path_attributes = sys.executable.split("\\")
+        if path_attributes[1] == 'Users':
+            path = path_attributes[0] + "\\" + path_attributes[1] + "\\" + path_attributes[2] + "\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
+            if os.path.exists(path):
+                return path
+
+
+ZOOM_PATH = find_zoom_exe()
+if ZOOM_PATH == None:
+    # Attempts to load from settings
+    try:
+        with open('data/settings.json', 'r', encoding='utf-8') as f:
+            ZOOM_PATH = json.loads(f.read())['ZOOM_PATH']
+    except FileNotFoundError:
+        pass
+
+    # Could not load from settings :( 
+    if ZOOM_PATH == None:
+        print("Could not auto-locate zoom executable. Please enter it now.")
+        print("EX: C:\\Users\\Your Name\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe")
+
+        ZOOM_PATH = input()
+
+        while not os.path.exists(ZOOM_PATH):
+            ZOOM_PATH = input("That file path does not exist. Please enter a valid zoom.exe location")
+
+        # Save zoom_path for future launches so user only has to enter it once
+        with open('data/settings.json', 'w+', encoding='utf-8') as f:
+                json.dump({'ZOOM_PATH': ZOOM_PATH}, f, ensure_ascii=False, indent=4)
+
 def join_meeting(meeting):
     if meeting['end_date'] < datetime.datetime.now().timestamp():
         # remove meeting because it has passed
@@ -33,7 +87,7 @@ def join_meeting(meeting):
     password = meeting['password']
 
     # start zoom exe
-    os.startfile("C:\\Users\\David Teather\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe")
+    os.startfile(ZOOM_PATH)
     time.sleep(2)
 
     # find join a meeting button
