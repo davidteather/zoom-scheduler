@@ -24,7 +24,7 @@ def find_zoom_exe():
         # OS X
         pass
     elif sys.platform == "win32":
-        # Windows...
+        # Windows
 
         # Requirements to find for this section
         #  * Script is somewhere under a /users directory like documents or desktop
@@ -51,6 +51,8 @@ if ZOOM_PATH == None:
     try:
         with open('data/settings.json', 'r', encoding='utf-8') as f:
             ZOOM_PATH = json.loads(f.read())['ZOOM_PATH']
+            if not os.path.exists(ZOOM_PATH):
+                ZOOM_PATH = None
     except FileNotFoundError:
         pass
 
@@ -67,6 +69,7 @@ if ZOOM_PATH == None:
         # Save zoom_path for future launches so user only has to enter it once
         with open('data/settings.json', 'w+', encoding='utf-8') as f:
                 json.dump({'ZOOM_PATH': ZOOM_PATH}, f, ensure_ascii=False, indent=4)
+
 
 def join_meeting(meeting):
     if meeting['end_date'] < datetime.datetime.now().timestamp():
