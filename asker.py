@@ -6,7 +6,7 @@ def ask():
     hour = time.split(":")[0]
     minute = time.split(":")[1]
 
-    print("\nSun, Mon, Tue, Wed, Thu, Fri, Sat")
+    print("\nDay options: Sun, Mon, Tue, Wed, Thu, Fri, Sat")
     days = input("What days are your classes? (e.g. Mon,Wed,Fri): ")
 
     room_id = input("Zoom ID: (e.g. 01234567890): ")
