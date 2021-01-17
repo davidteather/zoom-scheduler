@@ -1,10 +1,8 @@
-from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 import pyautogui
 import datetime
-import logging
-import signal
 import time
 import json
 import os
@@ -28,7 +26,7 @@ def join_meeting(meeting):
     password = meeting['password']
 
     # start zoom exe
-    os.startfile("C:\\Users\\David Teather\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe")
+    os.startfile("C:\\Users\\Nick\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe")
     time.sleep(2)
 
     # find join a meeting button
@@ -58,20 +56,23 @@ def join_meeting(meeting):
         pyautogui.moveTo(join_no_video)
         pyautogui.click()
 
+
 if __name__ == '__main__':
     # Loading Meetings
     with open("meetings.json", 'r') as i:
         meetings = json.loads(i.read())['meetings']
 
     # Scheduler 
-    scheduler = BlockingScheduler()
+    scheduler = BackgroundScheduler()
 
     # Add a job for each meeting
     for m in meetings:
         scheduler.add_job(join_meeting, CronTrigger.from_crontab(m['crontab']), args=[m])
 
+    scheduler.start()
+
     try:
-        logging.info("Starting scheduler")
-        scheduler.start()
+        while True:
+            time.sleep(0.1)
     except (KeyboardInterrupt, SystemExit):
-        pass
+        scheduler.shutdown()

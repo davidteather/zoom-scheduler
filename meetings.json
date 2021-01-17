@@ -1,7 +1,7 @@
 {
     "meetings": [
         {
-            "crontab": "34 * * * *",
+            "crontab": "04 00 * * sun",
             "room_id": "94018568215",
             "password": "317662",
             "end_date": 1621051200
