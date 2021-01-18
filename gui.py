@@ -3,6 +3,7 @@ import tkinter as tk
 
 import dateparser
 import datetime
+import time
 import json
 import os
 
@@ -77,24 +78,24 @@ def add_meeting_to_grid(m,x):
 
 def redraw():
     global meetings
-    print('redraw')
     for x in range(2,len(labels)):
         for l in labels[x]:
             l.grid_forget()
+
+    with open(data_path, 'r') as i:
+        meetings = json.loads(i.read())['meetings']
 
     # Add existing meetings
     for x in range(len(meetings)):
         m = meetings[x]
         add_meeting_to_grid(m,x)
 
-    with open(data_path, 'r') as i:
-        meetings = json.loads(i.read())['meetings']
-    
 redraw()
 
 # New Meeting Class
 class new_meeting_window():
     _tk_root = None
+    redraw_func = None
     def __init__(self):
         self.root = tk.Toplevel(new_meeting_window._tk_root)
         self.root.bind('<Return>', (lambda: self.submit()))
@@ -148,12 +149,12 @@ class new_meeting_window():
         with open(data_path, 'w+', encoding='utf-8') as f:
             json.dump({'meetings': meetings}, f, ensure_ascii=False, indent=4)
 
-        redraw()
+        new_meeting_window.redraw_func()
         self.root.withdraw()
         
 
 new_meeting_window._tk_root = window
-
+new_meeting_window.redraw_func = redraw
 
 b = tk.Button(window, text="Add New Meeting", command=new_meeting_window)
 b.grid(row=0, column=4)
