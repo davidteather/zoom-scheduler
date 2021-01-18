@@ -2,3 +2,4 @@ APScheduler==3.6.3
 watchdog==1.0.2
 pyautogui==0.9.52
 dateparser==1.0.0
+pystray==0.17.2
