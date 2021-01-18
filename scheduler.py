@@ -3,6 +3,9 @@ from apscheduler.triggers.cron import CronTrigger
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 
+from pystray import Icon as icon, Menu as menu, MenuItem as item
+from PIL import Image
+
 import pyautogui
 import logging
 import datetime
@@ -161,11 +164,15 @@ if __name__ == '__main__':
     observer.schedule(event_handler, './data', recursive=True)
     observer.start()
 
-    try:
-        while True:
-            time.sleep(0.1)
-    except (KeyboardInterrupt, SystemExit):
-        observer.stop()
-        scheduler.shutdown()
+    def weStop(self):
+            ic.stop()
+    
+    ic = icon('test', Image.open('images/icon.png'), menu=menu(
+            item(
+                'Quit',
+                weStop)))
 
+    ic.run()
+    observer.stop()
+    scheduler.shutdown()
     observer.join()
