@@ -1,6 +1,7 @@
 from functools import partial
 import tkinter as tk
 
+import dateparser
 import datetime
 import json
 import os
@@ -44,6 +45,8 @@ def delete_meeting(meeting_index):
     with open(data_path, 'w+', encoding='utf-8') as f:
         json.dump({'meetings': meetings}, f, ensure_ascii=False, indent=4)
 
+    redraw()
+
 # Key Header
 sub_arr = []
 headers = ['Class Name', 'Class Time', 'Class Days', 'End Date','Remove Class']
@@ -53,7 +56,8 @@ for t in range(len(headers)):
     sub_arr.append(l)
 labels.append(sub_arr.copy())
 
-def add_meeting_to_grid(m):
+
+def add_meeting_to_grid(m,x):
     sub_arr = []
     hour = m['crontab'].split(" ")[0]
     minute = m['crontab'].split(" ")[1]
@@ -71,16 +75,88 @@ def add_meeting_to_grid(m):
     sub_arr.append(b)
     labels.append(sub_arr.copy())
 
+def redraw():
+    global meetings
+    print('redraw')
+    for x in range(2,len(labels)):
+        for l in labels[x]:
+            l.grid_forget()
 
-# Add existing meetings
-for x in range(len(meetings)):
-    m = meetings[x]
-    add_meeting_to_grid(m)
+    # Add existing meetings
+    for x in range(len(meetings)):
+        m = meetings[x]
+        add_meeting_to_grid(m,x)
+
+    with open(data_path, 'r') as i:
+        meetings = json.loads(i.read())['meetings']
     
+redraw()
 
-# Add new meeting section
+# New Meeting Class
+class new_meeting_window():
+    _tk_root = None
+    def __init__(self):
+        self.root = tk.Toplevel(new_meeting_window._tk_root)
+        self.root.bind('<Return>', (lambda: self.submit()))
+        a = tk.Label(self.root ,text = "Class Name").grid(row = 0,column = 0)
+        b = tk.Label(self.root ,text = "Days of week \n(Ex: Sun,Mon,Tue,Wed,Thu,Fri,Sat)").grid(row = 1,column = 0)
+        c = tk.Label(self.root ,text = "Class Time (Ex: 16:20)").grid(row = 2,column = 0)
+        d = tk.Label(self.root ,text = "Room ID").grid(row = 3,column = 0)
+        e = tk.Label(self.root ,text = "Room Passcode").grid(row = 4,column = 0)
+        f = tk.Label(self.root ,text = "End date (Ex: 5/21/2021)").grid(row = 5,column = 0)
+        self.class_name = tk.Entry(self.root)
+        self.class_name.grid(row = 0,column = 1)
+        self.days_of_week = tk.Entry(self.root)
+        self.days_of_week.grid(row = 1,column = 1)
+        self.room_id = tk.Entry(self.root)
+        self.room_id.grid(row = 3,column = 1)
+        self.room_passcode = tk.Entry(self.root)
+        self.room_passcode.grid(row = 4,column = 1)
+        self.end_date = tk.Entry(self.root)
+        self.end_date.grid(row=5, column=1)
+        self.class_time = tk.Entry(self.root)
+        self.class_time.grid(row=2, column=1)
+        btn = tk.Button(self.root ,text="Submit", command=self.submit).grid(row=6,column=0)
+
+    def submit(self):
+        hour = self.class_time.get().split(":")[0]
+        minute = self.class_time.get().split(":")[1]
+        days = self.days_of_week.get()
+        new_entry = {
+            "class_name": self.class_name.get(),
+            "crontab": f"{minute} {hour} * * {days}",
+            "room_id": self.room_id.get(),
+            "password": self.room_passcode.get(),
+            "end_date": dateparser.parse(self.end_date.get(), settings={"PREFER_DATES_FROM": "future"}).timestamp()
+        }
+
+        if ".py" in __file__:
+            run_with_exe = False
+        else: 
+            run_with_exe = True
+
+        if run_with_exe:
+            data_path = "src/data/meetings.json"
+        else:
+            data_path = "data/meetings.json"
+
+        with open(data_path, 'r') as i:
+            meetings = json.loads(i.read())['meetings']
+
+        meetings.append(new_entry)
+        
+        with open(data_path, 'w+', encoding='utf-8') as f:
+            json.dump({'meetings': meetings}, f, ensure_ascii=False, indent=4)
+
+        redraw()
+        self.root.withdraw()
+        
+
+new_meeting_window._tk_root = window
 
 
+b = tk.Button(window, text="Add New Meeting", command=new_meeting_window)
+b.grid(row=0, column=4)
 
 # Tkinter run loop
 window.mainloop()
