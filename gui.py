@@ -7,15 +7,7 @@ import time
 import json
 import os
 
-# Check if an exe is running
-if ".py" in __file__:
-    run_with_exe = False
-else: 
-    run_with_exe = True
-
-# Start Scheduler
-if run_with_exe:
-    os.startfile('src/scheduler.exe')
+#os.startfile(os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + '/src/scheduler.exe')
 
 labels = []
 window = tk.Tk()
@@ -27,16 +19,12 @@ title.grid(row=0, column=2)
 labels.append([None, title, None])
 
 # Read meetings
-if run_with_exe:
-    data_path = "src/data/meetings.json"
-else:
-    data_path = "data/meetings.json"
+data_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + "/src/data/meetings.json"
 
 with open(data_path, 'r') as i:
     meetings = json.loads(i.read())['meetings']
 
 def delete_meeting(meeting_index):
-    global offset
     remove_row = labels[meeting_index]
     for l in remove_row:
         l.grid_forget()
@@ -60,8 +48,8 @@ labels.append(sub_arr.copy())
 
 def add_meeting_to_grid(m,x):
     sub_arr = []
-    hour = m['crontab'].split(" ")[0]
-    minute = m['crontab'].split(" ")[1]
+    minute = m['crontab'].split(" ")[0]
+    hour = m['crontab'].split(" ")[1]
     values = [m['class_name'], f"{hour}:{minute}", m['crontab'].split(" ")[4], datetime.datetime.fromtimestamp(m['end_date']).strftime("%x")]
     for j in range(len(values)):
         l = tk.Label(window, text=values[j], font=("Arial", 20))
@@ -130,16 +118,8 @@ class new_meeting_window():
             "password": self.room_passcode.get(),
             "end_date": dateparser.parse(self.end_date.get(), settings={"PREFER_DATES_FROM": "future"}).timestamp()
         }
-
-        if ".py" in __file__:
-            run_with_exe = False
-        else: 
-            run_with_exe = True
-
-        if run_with_exe:
-            data_path = "src/data/meetings.json"
-        else:
-            data_path = "data/meetings.json"
+            
+        data_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + "/src/data/meetings.json"
 
         with open(data_path, 'r') as i:
             meetings = json.loads(i.read())['meetings']

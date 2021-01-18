@@ -5,6 +5,9 @@ import os
 if not os.path.isdir('data'):
     os.mkdir('data')
 
+data_path = "data/meetings.json"
+images_path = "images/"
+
 
 def ask():
     name = input("What is the name of your class? (e.g. CS 101): ")
@@ -32,13 +35,13 @@ def ask():
     }
 
     try:
-        with open("data/meetings.json", "r") as i:
+        with open(data_path, "r") as i:
             current_data = json.loads(i.read())['meetings']
             current_data.append(new_meeting)
     except (FileNotFoundError, ValueError):
         current_data = [new_meeting]
 
-    with open('data/meetings.json', 'w+', encoding='utf-8') as f:
+    with open(data_path, 'w+', encoding='utf-8') as f:
         json.dump({'meetings': current_data}, f, ensure_ascii=False, indent=4)
 
 

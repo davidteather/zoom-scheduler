@@ -11,9 +11,8 @@ import json
 import sys
 import os
 
-if not os.path.isdir('data'):
-    os.mkdir('data')
-
+data_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + "/data/meetings.json"
+images_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + "/images/"
 
 def find_zoom_exe():
     # "C:\\Users\\David Teather\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
@@ -52,8 +51,10 @@ ZOOM_PATH = find_zoom_exe()
 if ZOOM_PATH == None:
     # Attempts to load from settings
     try:
-        with open('data/settings.json', 'r', encoding='utf-8') as f:
+        with open(data_path +'/data/settings.json', 'r', encoding='utf-8') as f:
             ZOOM_PATH = json.loads(f.read())['ZOOM_PATH']
+
+            
     except (FileNotFoundError, ValueError):
         pass
 
@@ -69,23 +70,22 @@ if ZOOM_PATH == None:
                 "That file path does not exist. Please enter a valid zoom.exe location")
 
         # Save zoom_path for future launches so user only has to enter it once
-        with open('data/settings.json', 'w+', encoding='utf-8') as f:
+        with open(os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + '/data/settings.json', 'w+', encoding='utf-8') as f:
             json.dump({'ZOOM_PATH': ZOOM_PATH}, f,
-                      ensure_ascii=False, indent=4)
-
+                    ensure_ascii=False, indent=4)
 
 def join_meeting(meeting):
     if meeting['end_date'] < datetime.datetime.now().timestamp():
         # remove meeting because it has passed
-        with open("data/meetings.json", 'r') as i:
+        with open(data_path, 'r') as i:
             current = json.loads(i.read())['meetings']
             for m in current:
                 if m == meeting:
                     current.remove(m)
                     break
-
-        with open('data/meetings.json', 'w+', encoding='utf-8') as f:
-            json.dump({'meetings': current}, f, ensure_ascii=False, indent=4)
+            
+            with open(data_path, 'w+', encoding='utf-8') as f:
+                json.dump({'meetings': current}, f, ensure_ascii=False, indent=4)
 
         return
 
@@ -97,7 +97,7 @@ def join_meeting(meeting):
     time.sleep(2)
 
     # find join a meeting button
-    join_button = pyautogui.locateOnScreen("images/join-a-meeting.png")
+    join_button = pyautogui.locateOnScreen(images_path + "join-a-meeting.png")
     pyautogui.moveTo(join_button)
     pyautogui.click()
     time.sleep(1)
@@ -107,7 +107,7 @@ def join_meeting(meeting):
     pyautogui.press('enter')
 
     # Handle Required Login
-    warning = pyautogui.locateOnScreen("images/warning.png")
+    warning = pyautogui.locateOnScreen(images_path + "warning.png")
     if warning == None:
         # Authorization is not needed
         pyautogui.write(str(password))
@@ -117,7 +117,7 @@ def join_meeting(meeting):
         raise Exception(
             "Authorization is required for this zoom call. Please login.")
 
-    join_no_video = pyautogui.locateOnScreen("images/no-video.png")
+    join_no_video = pyautogui.locateOnScreen(images_path + "no-video.png")
     if join_no_video != None:
         pyautogui.moveTo(join_no_video)
         pyautogui.click()
@@ -136,7 +136,7 @@ class FileChange(LoggingEventHandler):
 
 def queue_scheduler():
     # Loading Meetings
-    with open("data/meetings.json", 'r') as i:
+    with open(data_path, 'r') as i:
         meetings = json.loads(i.read())['meetings']
 
     # Scheduler
@@ -158,7 +158,7 @@ if __name__ == '__main__':
     # File change observer
     event_handler = FileChange()
     observer = Observer()
-    observer.schedule(event_handler, './data', recursive=True)
+    observer.schedule(event_handler, os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + '/data', recursive=True)
     observer.start()
 
     try:
