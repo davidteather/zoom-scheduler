@@ -7,6 +7,8 @@ if not os.path.isdir('data'):
 
 
 def ask():
+    name = input("What is the name of your class? (e.g. CS 101): ")
+
     time = input("What time is your class? (e.g. 14:30): ")
     hour = time.split(":")[0]
     minute = time.split(":")[1]
@@ -22,6 +24,7 @@ def ask():
         end, settings={"PREFER_DATES_FROM": "future"}).timestamp()
 
     new_meeting = {
+        "class_name": name,
         "crontab": f"{minute} {hour} * * {days}",
         "room_id": room_id,
         "password": password,
@@ -32,7 +35,7 @@ def ask():
         with open("data/meetings.json", "r") as i:
             current_data = json.loads(i.read())['meetings']
             current_data.append(new_meeting)
-    except FileNotFoundError:
+    except (FileNotFoundError, ValueError):
         current_data = [new_meeting]
 
     with open('data/meetings.json', 'w+', encoding='utf-8') as f:

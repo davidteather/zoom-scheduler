@@ -54,7 +54,7 @@ if ZOOM_PATH == None:
     try:
         with open('data/settings.json', 'r', encoding='utf-8') as f:
             ZOOM_PATH = json.loads(f.read())['ZOOM_PATH']
-    except FileNotFoundError:
+    except (FileNotFoundError, ValueError):
         pass
 
     # Could not load from settings :(
