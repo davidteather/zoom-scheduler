@@ -7,7 +7,7 @@ import time
 import json
 import os
 
-#os.startfile(os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + '/src/scheduler.exe')
+from scheduler import join_meeting
 
 labels = []
 window = tk.Tk()
@@ -15,7 +15,7 @@ window.title("Zoom Scheduler")
 
 # Title
 title = tk.Label(window, text="Zoom Scheduler", font=("Arial", 60))
-title.grid(row=0, column=2)
+title.grid(row=0, column=2, columnspan=2)
 labels.append([None, title, None])
 
 # Read meetings
@@ -36,12 +36,15 @@ def delete_meeting(meeting_index):
 
     redraw()
 
+def launch_meeting(meeting_index):
+    join_meeting(meetings[meeting_index-2])
+
 # Key Header
 sub_arr = []
-headers = ['Class Name', 'Class Time', 'Class Days', 'End Date','Remove Class']
+headers = ['Launch Class', 'Class Name', 'Class Time', 'Class Days', 'End Date','Remove Class']
 for t in range(len(headers)):
     l = tk.Label(window, text=headers[t], font=("Arial", 30))
-    l.grid(row=1, column=t)
+    l.grid(row=1, column=t, columnspan=1, ipadx=20)
     sub_arr.append(l)
 labels.append(sub_arr.copy())
 
@@ -51,16 +54,25 @@ def add_meeting_to_grid(m,x):
     minute = m['crontab'].split(" ")[0]
     hour = m['crontab'].split(" ")[1]
     values = [m['class_name'], f"{hour}:{minute}", m['crontab'].split(" ")[4], datetime.datetime.fromtimestamp(m['end_date']).strftime("%x")]
+
+    # Add Launch Button
+    b1 = tk.Button(window,
+                   text="Launch",
+                   command=partial(launch_meeting, x+2))
+    b1.grid(row=x+2, column=0)
+    sub_arr.append(b1)
+    labels.append(sub_arr.copy())
+
     for j in range(len(values)):
         l = tk.Label(window, text=values[j], font=("Arial", 20))
-        l.grid(row=x+2, column=j)
+        l.grid(row=x+2, column=j + 1)
         sub_arr.append(l)
 
     # Add Remove Button
     b = tk.Button(window,
                    text="X",
                    command=partial(delete_meeting, x+2))
-    b.grid(row=x+2, column=len(values))
+    b.grid(row=x+2, column=len(values) + 1)
     sub_arr.append(b)
     labels.append(sub_arr.copy())
 
