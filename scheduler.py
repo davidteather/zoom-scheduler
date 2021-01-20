@@ -10,9 +10,19 @@ import time
 import json
 import sys
 import os
+import wmi
+import win32ui
 
 data_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + "/data/meetings.json"
 images_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + "/images/"
+
+def WindowExists():
+    try:
+        win32ui.FindWindow(None, "Zoom Meeting")
+    except win32ui.error:
+        return False
+    else:
+        return True
 
 def find_zoom_exe():
     # "C:\\Users\\David Teather\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
@@ -75,52 +85,67 @@ if ZOOM_PATH == None:
                     ensure_ascii=False, indent=4)
 
 def join_meeting(meeting):
-    if meeting['end_date'] < datetime.datetime.now().timestamp():
-        # remove meeting because it has passed
-        with open(data_path, 'r') as i:
-            current = json.loads(i.read())['meetings']
-            for m in current:
-                if m == meeting:
-                    current.remove(m)
-                    break
+    if not WindowExists():
+        if meeting['end_date'] < datetime.datetime.now().timestamp():
+            # remove meeting because it has passed
+            with open(data_path, 'r') as i:
+                current = json.loads(i.read())['meetings']
+                for m in current:
+                    if m == meeting:
+                        current.remove(m)
+                        break
+                
+                with open(data_path, 'w+', encoding='utf-8') as f:
+                    json.dump({'meetings': current}, f, ensure_ascii=False, indent=4)
+
+            return
+
+        room_id = meeting['room_id']
+        password = meeting['password']
+
+        # start zoom exe
+        try:
+            name = "Zoom.exe"
+            f = wmi.WMI()
+
+            for process in f.Win32_Process():
+                if process.name == name:
+                    process.Terminate()
             
-            with open(data_path, 'w+', encoding='utf-8') as f:
-                json.dump({'meetings': current}, f, ensure_ascii=False, indent=4)
+            time.sleep(3)
+        except:
+            pass
+        
+        os.startfile(ZOOM_PATH)
+        time.sleep(2)
 
-        return
-
-    room_id = meeting['room_id']
-    password = meeting['password']
-
-    # start zoom exe
-    os.startfile(ZOOM_PATH)
-    time.sleep(2)
-
-    # find join a meeting button
-    join_button = pyautogui.locateOnScreen(images_path + "join-a-meeting.png")
-    pyautogui.moveTo(join_button)
-    pyautogui.click()
-    time.sleep(1)
-
-    # Join a meeting
-    pyautogui.write(str(room_id))
-    pyautogui.press('enter')
-
-    # Handle Required Login
-    warning = pyautogui.locateOnScreen(images_path + "warning.png")
-    if warning == None:
-        # Authorization is not needed
-        pyautogui.write(str(password))
-        pyautogui.press('enter')
-        time.sleep(1)
-    else:
-        raise Exception(
-            "Authorization is required for this zoom call. Please login.")
-
-    join_no_video = pyautogui.locateOnScreen(images_path + "no-video.png")
-    if join_no_video != None:
-        pyautogui.moveTo(join_no_video)
+        # find join a meeting button
+        join_button = pyautogui.locateOnScreen(images_path + "join-a-meeting.png")
+        pyautogui.moveTo(join_button)
         pyautogui.click()
+        time.sleep(1)
+
+        # Join a meeting
+        pyautogui.write(str(room_id))
+        pyautogui.press('enter')
+
+        # Handle Required Login
+        warning = pyautogui.locateOnScreen(images_path + "warning.png")
+        if warning == None:
+            # Authorization is not needed
+            pyautogui.write(str(password))
+            pyautogui.press('enter')
+            time.sleep(1)
+        else:
+            raise Exception(
+                "Authorization is required for this zoom call. Please login.")
+
+        join_no_video = pyautogui.locateOnScreen(images_path + "no-video.png")
+        if join_no_video != None:
+            pyautogui.moveTo(join_no_video)
+            pyautogui.click()
+    else:
+        return
 
 
 class FileChange(LoggingEventHandler):
