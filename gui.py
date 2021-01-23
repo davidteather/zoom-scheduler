@@ -4,10 +4,11 @@ import tkinter as tk
 import dateparser
 import datetime
 import time
+import sys
 import json
 import os
 
-from scheduler import join_meeting
+from src.scheduler import join_meeting
 
 labels = []
 window = tk.Tk()
@@ -19,7 +20,13 @@ title.grid(row=0, column=2, columnspan=2)
 labels.append([None, title, None])
 
 # Read meetings
-data_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + "/src/data/meetings.json"
+if getattr(sys, 'frozen', False):
+    data_path = os.path.abspath(os.path.dirname(sys.executable)) + "/src/data/meetings.json"
+    images_path = os.path.abspath(os.path.dirname(sys.executable)) + "/src/images/"
+
+elif __file__:
+    data_path = os.path.abspath(os.path.dirname(__file__)) + "/src/data/meetings.json"
+    images_path = os.path.abspath(os.path.dirname(__file__)) + "/src/images/"
 
 with open(data_path, 'r') as i:
     meetings = json.loads(i.read())['meetings']
@@ -37,7 +44,7 @@ def delete_meeting(meeting_index):
     redraw()
 
 def launch_meeting(meeting_index):
-    join_meeting(meetings[meeting_index-2])
+    join_meeting(meetings[meeting_index-2], images_path)
 
 # Key Header
 sub_arr = []
